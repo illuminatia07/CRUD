@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <style>
+    body {
+      background-color: #212529;
+      color: #fff;
+    }
+    .container {
+      margin-top: 50px;
+    }
+    .list-group-item {
+      background-color: #343a40;
+      color: #fff;
+      border-color: #343a40;
+      display: flex;
+      justify-content: space-between; /* Align buttons to the right */
+      align-items: center; /* Center items vertically */
+    }
+    .list-group-item .btn {
+      margin-left: 5px; /* Add margin between buttons */
+    }
+    .btn-primary {
+      background-color: #007bff;
+      border-color: #007bff;
+    }
+    .btn-danger {
+      background-color: #dc3545;
+      border-color: #dc3545;
+    }
+    .btn-primary:hover,
+    .btn-danger:hover {
+      background-color: #0056b3;
+      border-color: #0056b3;
+    }
+    .form-control {
+      width: 100%; /* Set width to 100% */
+      background-color: #495057;
+      color: #fff;
+      text-align: left;
+      border-color: #495057;
+    }
+    .btn-primary,
+    .btn-danger,
+    .btn-primary:hover,
+    .btn-danger:hover {
+      color: #fff;
+    }
+    h1,
+    h2 {
+      color: #fff;
+      text-align: center;
+    }
+    .search-container {
+      display: flex;
+      justify-content: space-between; /* Center align search button */
+      align-items: center;
+      margin-bottom: 20px; /* Add margin to the bottom */
+    }
+    .add-user {
+      width: 30%; /* Set width to 50% */
+      margin: 0 auto; /* Center align horizontally */
+    }
+    .add-user {
+      text-align: center;
+    }
+    .move-left {
+      margin-right: 87%;
+    }
+    .title-left {
+      margin-right: 88%;
+    }
+    .collapsible-content {
+      display: none;
+      margin-top: 10px;
+    }
+    .error-message {
+      color: red;
+    }
+    .hidden {
+      display: none;
+    }
+    .move-left {
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Content -->
+    <!-- Logout button -->
+    <form action="/admin/logout" method="POST">
+      <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
+    <h1>Admin Panel</h1>
+    <br />
+    <!-- Search form -->
+    <div class="search-container mt-2">
+      <!-- Add padding and center align -->
+      <form action="/admin/users/search" method="GET">
+        <input
+          type="text"
+          name="query"
+          placeholder="Search users..."
+          class="form-control"
+        />
+        <button type="submit" class="btn btn-primary mt-2">Search</button>
+      </form>
+    </div>
+
+    <!-- User list -->
+    <h2 class="title-left">User List</h2>
+    <ul class="list-group justify-content-center mt-5" id="userList">
+      <% if (users.length === 0 && noUserFound) { %>
+        <li class="list-group-item">User not found</li>
+      <% } else { %> 
+        <% users.forEach(user => { %> 
+          <% if (!user.isAdmin) { %>
+            <li class="list-group-item">
+              <%= user.username %> - <%= user.email %>
+              <!-- Edit and delete buttons -->
+              <div>
+                <a href="/admin/users/edit/<%= user._id %>" class="btn btn-primary btn-sm">Edit</a>
+                <form action="/admin/users/delete/<%= user._id %>" method="POST" style="display: inline">
+                  <button type="submit" class="btn btn-danger btn-sm justify-content-start">Delete</button>
+                </form>
+              </div>
+            </li>
+          <% } %> 
+        <% }); %> 
+      <% } %>
+    </ul>
+    <% if (typeof successMessage !== 'undefined') { %>
+        <div id="msg" class="alerts" role="alert" style="color: green;">
+          <%= successMessage %>
+        </div>
+      <% } %>
+    <br /><br />
+
+    <!-- Add user form -->
+    <h2 class="add-user pt pt-10">Add User</h2>
+    <br />
+    <button class="btn btn-primary mb-3" onclick="toggleCollapsible()">
+      Add User
+    </button>
+    <div class="collapsible-content">
+      <form
+        action="/admin/users/create"
+        method="POST"
+        class="add-user"
+        onsubmit="return validateForm()"
+      >
+        <!-- Add class to form -->
+        <div class="mb-8">
+          <label class="move-left" for="name">Name</label>
+          <input
+            type="text"
+            id="username"
+            name="name"
+            class="form-control"
+            required
+          />
+          <span
+            id="usernameError"
+            class="error-message text-danger error"
+          ></span>
+        </div>
+        <div class="mb-3">
+          <label class="move-left" for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-control"
+            required
+          />
+          <span id="emailError" class="error-message"></span>
+        </div>
+        <div class="row mb-3">
+          <div class="col">
+            <label class="move-left" for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control"
+              required
+            />
+            <span id="passwordError" class="error-message"></span>
+          </div>
+          <div class="col">
+            <label class="move-left" for="retype-password"
+              >Retype Password</label
+            >
+            <input
+              type="password"
+              id="repassword"
+              name="retype-password"
+              class="form-control text-retype"
+              required
+            />
+            <span id="repasswordError" class="error-message"></span>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Add User</button>
+      </form>
+     
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom JS -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const msg = document.getElementById("msg");
+
+      function clearMessage() {
+        if (msg) {
+          msg.innerHTML = "";
+        }
+      }
+
+      setInterval(clearMessage, 2000);
+    });
+
+    function validateInput(inputId, regexPattern, errorMessage) {
+      const input = document.getElementById(inputId);
+      const value = input.value.trim();
+      const errorElement = document.getElementById(inputId + "Error");
+
+      if (!regexPattern.test(value)) {
+        errorElement.textContent = errorMessage;
+        return false;
+      } else {
+        errorElement.textContent = "";
+        return true;
+      }
+    }
+
+    function validateForm() {
+      const usernameRegex = /^(?! )[a-zA-Z'\s_-]{3,16}$/;
+      const passwordRegex =
+        /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!-/%*?&]{8,}$/;
+      const emailRegex = /^[a-zA-Z0-9._-]+@[a-z]+\.[a-z]{2,}$/;
+
+      const isUsernameValid = validateInput(
+        "username",
+        usernameRegex,
+        "Invalid username"
+      );
+      const isPasswordValid = validateInput(
+        "password",
+        passwordRegex,
+        "Password must contain at least 8 characters with at least one uppercase letter, one lowercase letter, one digit, and one special character."
+      );
+      const isEmailValid = validateInput(
+        "email",
+        emailRegex,
+        "Invalid email"
+      );
+      const isRpasswordValid = validateRePassword();
+
+      return (
+        isUsernameValid && isPasswordValid && isEmailValid && isRpasswordValid
+      );
+    }
+
+    function validateRePassword() {
+      const password = document.getElementById("password").value.trim();
+      const repassword = document.getElementById("repassword").value.trim();
+      const errorElement = document.getElementById("repasswordError");
+
+      if (password !== repassword) {
+        errorElement.textContent =
+          "Passwords do not match. Please try again.";
+        return false;
+      } else {
+        errorElement.textContent = "";
+        return true;
+      }
+    }
+
+    // Add blur event listeners for input fields
+    document.getElementById("username").addEventListener("blur", function () {
+      validateInput("username", /^(?! )[a-zA-Z'\s_-]{3,16}$/, "Invalid name");
+    });
+
+    document.getElementById("password").addEventListener("blur", function () {
+      validateInput(
+        "password",
+        /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        "Password must contain at least 8 characters with at least one uppercase letter, one lowercase letter, one digit, and one special character."
+      );
+    });
+
+    document.getElementById("email").addEventListener("blur", function () {
+      validateInput(
+        "email",
+        /^[a-zA-Z0-9._-]+@[a-z]+\.[a-z]{2,}$/,
+        "Invalid email"
+      );
+    });
+    document
+      .getElementById("repassword")
+      .addEventListener("blur", function () {
+        validateRePassword();
+      });
+
+    function toggleCollapsible() {
+      var content = document.querySelector(".collapsible-content");
+      content.style.display =
+        content.style.display === "none" ? "block" : "none";
+    }
+  </script>
+</body>
+</html>

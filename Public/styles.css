@@ -1,0 +1,51 @@
+/* Custom styles */
+.container {
+    max-width: 400px;
+    margin: 100px auto;
+}
+.error{
+    color: red;
+}
+.search{
+    width: 300px;
+    margin-left: 20px;
+}
+.container-nav{
+ height: 70px;
+}
+.nav-cont{
+    margin-left: 30px;
+    margin-top: 15px;
+}
+.moveup{
+    margin-left: 280px;
+    font-size: smaller;
+}
+h1{
+    font-size: 1.5rem;
+}
+.font{
+    font-size: medium;
+}
+.card {
+    display: flex; /* Use 'flex' instead of 'flexbox' */
+    flex-direction: column;
+    justify-content: flex-start; /* Align items to the start */
+}
+body {
+    background-color: #343a40; /* Dark background color */
+    color: #fff; /* Light text color */
+  }
+  
+  .card {
+    background-color: #212529; /* Dark card background color */
+    color: #fff; /* Light text color */
+  }
+  
+  .error {
+    color: #dc3545; /* Error message color */
+  }
+  
+  .success {
+    color: #28a745; /* Success message color */
+  }
